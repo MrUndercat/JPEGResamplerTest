@@ -2,18 +2,21 @@ package storage
 
 import (
 	myErrors "JPEGResempler/api/errors"
+	errors2 "JPEGResempler/internal/service/errors"
+
 	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/nfnt/resize"
 	"image"
 	"image/jpeg"
 	"io/fs"
 	"log/slog"
 	"os"
 	"path/filepath"
+
+	"github.com/nfnt/resize"
 )
 
 type Storage struct {
@@ -51,7 +54,7 @@ func (s *Storage) ProcessAndSaveImage(imageBase64 string) error {
 		}
 	}
 	if _, err := os.Stat(resampledPath); !os.IsNotExist(err) {
-		return errors.New("file already exists")
+		return errors2.FileAlreadyExistsErr{"file already exists"}
 	} else if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		s.Logger.Error(err.Error())
 		return myErrors.ErrorProcessingImage
@@ -78,7 +81,6 @@ func (s *Storage) ProcessAndSaveImage(imageBase64 string) error {
 		s.Logger.Error(err.Error())
 		return myErrors.ErrorProcessingImage
 	}
-
 	return nil
 }
 

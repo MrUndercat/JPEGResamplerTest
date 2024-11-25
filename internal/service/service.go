@@ -2,10 +2,11 @@ package service
 
 import (
 	"log/slog"
+	"time"
 )
 
 type ServiceI interface {
-	ResampleAndSaveImage(image string, resampleSize int) error
+	ResampleAndSaveImage(image string) (error, int64)
 }
 
 type MiddlewareI interface {
@@ -19,25 +20,26 @@ type StorageI interface {
 type Service struct {
 	Middleware MiddlewareI
 	Storage    StorageI
-	logger     *slog.Logger
+	Logger     *slog.Logger
 }
 
 func NewService(middleware MiddlewareI, storage StorageI, logger *slog.Logger) *Service {
 	return &Service{
 		Middleware: middleware,
 		Storage:    storage,
-		logger:     logger,
+		Logger:     logger,
 	}
 }
 
-func (s *Service) ResampleAndSaveImage(image string) error {
+func (s *Service) ResampleAndSaveImage(image string) (error, int64) {
+	now := time.Now()
 	if err := s.Middleware.ValidateImage(image); err != nil {
-		s.logger.Error(err.Error())
-		return err
+		s.Logger.Error(err.Error())
+		return err, time.Since(now).Milliseconds()
 	}
 	if err := s.Storage.ProcessAndSaveImage(image); err != nil {
-		s.logger.Error(err.Error())
-		return err
+		s.Logger.Error(err.Error())
+		return err, time.Since(now).Milliseconds()
 	}
-	return nil
+	return nil, time.Since(now).Milliseconds()
 }

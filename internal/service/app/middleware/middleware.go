@@ -3,8 +3,9 @@ package middleware
 import (
 	"encoding/base64"
 	"net/http"
+
+	"JPEGResempler/api/errors"
 )
-import "JPEGResempler/api/errors"
 
 type Middleware struct {
 }
